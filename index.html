@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Two Body Satellite</title>
+  <title>Driven Duffing Equation</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
@@ -11,7 +11,7 @@
 
 <body style="margin-left: 10%;margin-right: 10%;">
   <header style="background-color: black;color: white;text-align: center;font-size: 150%;
-  border-top-left-radius: 15px;border-top-right-radius: 15px;">EMA 550 Astrodynamics: Two Body Satellite</header>
+  border-top-left-radius: 15px;border-top-right-radius: 15px;">Driven Duffing Equation</header>
   <!--<p>Math can be inline like \(2^{2x}=4\), or displayed like:</p>
   \[2^{3x}=8\]-->
   <p style="font-size: small; text-align: center;margin-bottom: 0;">
@@ -22,18 +22,26 @@
   </p>
   
   <p style="text-indent:30px; font-size: large;">
-    At a given instant \(t_0 \)
-    , a 1000-kg earth-orbiting satellite has the inertial position and velocity 
-    vectors \(\mathbf{r_0} \) = 3207 \(\mathbf{\hat{x}} \)+ 5459 \(\mathbf{\hat{y}} \)+ 2714 \(\mathbf{\hat{z}} \) (km) and \(\mathbf{v_0} \) = −6.532 \(\mathbf{\hat{x}} \)+ 0.7835 \(\mathbf{\hat{y}} \)+ 6.142 \(\mathbf{\hat{z}} \)
-    (km/s). Numerically solve the two-body second-order differential equation to find the 
-    maximum altitude reached by the satellite and the time at which it occurs. Please also include 
-    a plot of the position of the satellite as a function of time.
+    The driven Duffing equation is a non-linear second-order ordinary differential equation used to model damped and driven oscillators in 
+    engineering and physics. The full non-homogeneous equation is given by:
+    $$
+    \ddot{x} + \delta\dot{x} + \alpha x + \beta x^{3}=\gamma \cos(\omega t)
+    $$
   </p>
-  <video src="SatTraj.mp4" style="width: 80%;border-radius: 25px;margin-left: 10%;" controls alt="Satellite Trajectory"></video>
-
-  <img src="SatelliteTrajectoryTFinal.jpg" style="width: 80%;border-radius: 25px;margin-left: 10%;" >
-
-  <img src="DistanceVSTime.jpg" style="width: 80%;border-radius: 25px;margin-left: 10%;" >
+  <p style="text-indent:30px; font-size: large;">
+    We note that the solution \(x = x(t)\) is the displacement, \(\dot{x}\) is the velocity, and \(\ddot{x}\) is the acceleration. The respective constants
+    are as follows: \(\alpha\rightarrow \) coefficient of linear damping, \(\beta\rightarrow \) coefficient of cubic damping, \(\gamma\rightarrow \) amplitude of external driving force,
+    \(\omega\rightarrow \) angular frequency of external driving force, and \(\delta\rightarrow \) coefficient of velocity damping. To analyze this equation, we will rewrite the Duffing equation
+    as a first order system of ordinary differential equations as follows.
+    $$
+    \begin{cases}
+    \dot{x} = v\\
+    \dot{v} = \gamma \cos(\phi) - \delta\dot{x} - \alpha x - \beta x^{3}\\
+    \dot{\phi} = \omega\\
+    \end{cases}
+    $$
+</p>
+  <video src="DuffingEquation3.mp4" style="width: 80%;border-radius: 25px;margin-left: 10%;" controls alt="Satellite Trajectory"></video>
   
   
 </body>
