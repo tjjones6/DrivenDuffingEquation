@@ -41,8 +41,8 @@ figure('units','normalized','Position',[0.1 0.1 .8 .8])
 % myWriter.FrameRate = 30;
 % open(myWriter);
 
-% Create subplots
-subplot(1,2,1); % Phase portrait
+% Phase Portrait
+subplot(1,2,1); 
 hold on
 myfigpref
 fig_xytit('$x$','$v$','Phase Space')
@@ -53,7 +53,8 @@ plot(IC(1),IC(2),'or')
 axis([min(xx) max(xx) min(yy) max(yy)])
 hold off
 
-subplot(1,2,2); % Time series
+% Time series
+subplot(1,2,2); 
 hold on
 grid on
 myfigpref
@@ -70,9 +71,7 @@ for i = 1:length(t)
     % Update VV (Due to forcing term)
     VV = v_dot(XX,YY,t(i));
 
-    % ---
-    % 2D Phase Portrait
-    % ---
+    % Phase Portrait
     subplot(1,2,1)
     hold on
     myfigpref
@@ -93,6 +92,7 @@ for i = 1:length(t)
     axis([min(xx) max(xx) min(yy) max(yy)])
     hold off
 
+    % Time series
     subplot(1,2,2)
     hold on
     grid on
