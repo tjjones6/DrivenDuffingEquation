@@ -30,9 +30,9 @@ UU = x_dot(X,V);
 % Begin time stepping
 figure('units','normalized','Position',[0.1 0.1 .8 .8])
 
-myWriter = VideoWriter('DuffingEquationPotential.mp4', 'MPEG-4');
-myWriter.FrameRate = 30;
-open(myWriter);
+% myWriter = VideoWriter('DuffingEquationPotential.mp4', 'MPEG-4');
+% myWriter.FrameRate = 30;
+% open(myWriter);
 
 for i = 1:length(t)
     clf;
@@ -69,12 +69,12 @@ for i = 1:length(t)
 
     pause(0.01)
 
-    frame = getframe(gcf);
-    writeVideo(myWriter,frame);
+%     frame = getframe(gcf);
+%     writeVideo(myWriter,frame);
 
 end
 
-close(myWriter)
+% close(myWriter)
 
 %% Plotting Reference Functions
 function myfigpref
