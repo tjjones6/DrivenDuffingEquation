@@ -66,8 +66,8 @@ figure('units','normalized','Position',[0.1 0.1 .8 .8])
 % open(myWriter);
 
 max_time = 500;
-gamma_final = 5;
-c = 0.001;
+gamma_final = 2.5;
+c = 0.1;
 tspan = [0,max_time];
 for i = 1:ceil(gamma_final/c)
     clf

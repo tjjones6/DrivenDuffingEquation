@@ -1,0 +1,190 @@
+%% Driven Duffing Oscillator 3D Return Map Animation with Top View
+% Author:  Tyler Jones
+% Contact: tjjones6@wisc.edu
+% Date:    05.23.2024
+
+% Description:
+% This MATLAB script models the behavior of a driven Duffing oscillator,
+% solving the Driven Duffing Equation using MATLAB's ode45 solver, and
+% animating the Poincaré map in 3D space with both a 3D view and a top view.
+
+clear all; close all; clc;
+
+%% Parameters
+alpha = -1;
+beta = 0.25;
+gamma = 2.5;
+omega = 2;
+delta = 0.1;
+
+% Period Definition
+T = 2*pi/omega; % Period of the driving force
+
+% Initial Condition (x, x_dot, phi)
+IC = [1; 0; 0]; % Initial data: (x=1, x_dot=0, phi=0)
+
+% Simulation time span
+time_span = [0 20000];
+
+% ODE solver tolerance options
+opts = odeset('RelTol',1e-8,'AbsTol',1e-8);
+
+% Duffing Equation Definition
+Duffing_Eq = @(t, Y) [Y(2); 
+                      gamma*cos(omega*t) - delta*Y(2) - alpha*Y(1) - beta*Y(1)^3; 
+                      omega];
+
+% Solve the Duffing Equation using ODE45
+% Y_global stores the full solution trajectory
+[t, Y_global] = ode45(Duffing_Eq, time_span, IC, opts);
+
+%% Plotting/Simulation
+% Initialize the figure for plotting
+figure('units','normalized','Position',[0.1 0.1 .8 .6])
+myfigpref
+
+% Iterate over increasing values of phi
+angular_res = 200; % Resolution for sweeping phi
+phi_final = 6*pi;  % Final angle
+phi = 0;           % Initialize phi = 0
+
+% Coloring shceme
+point_size = 4;
+colormap_type = 'cool';
+
+myWriter = VideoWriter('DuffingEquationPoincare3D.mp4', 'MPEG-4');
+myWriter.FrameRate = 30;
+open(myWriter);
+
+while abs(phi) <= phi_final
+    clf
+
+    % Initialize arrays to store Poincaré map points
+    poincare_x = [];
+    poincare_y = [];
+    
+    % First subplot for 3D view of poincare map
+    subplot(1,2,1)
+    hold on
+    plot3(Y_global(:,1), Y_global(:,2), Y_global(:,3)./time_span(2)*phi_final, 'Color', [0.5 0.5 0.5 0.05],'LineWidth', 0.5)
+    poincare_map_3D = scatter3(0, 0, 0, 0.01, 'k', 'filled'); % Placeholder for points
+    fig_xytit('$x$','$\dot{x}$','')
+    subtitle('3D Poincaré Map','Interpreter','latex')
+    zlabel('$\phi$','Interpreter','latex')
+    grid on; box on; shading interp
+    camlight HEADLIGHT; lighting gouraud; view([-65,-65,28])
+    xlim([-6 6])
+    ylim([-6 6])
+    zlim([0 phi_final])
+    colormap(colormap_type)
+    
+    % Second subplot for top view (true poincare map)
+    subplot(1,2,2)
+    hold on
+    poincare_map_2D = scatter(0, 0, point_size, 'k', 'filled'); % Placeholder for points
+    fig_xytit('$x$','$\dot{x}$','')
+    subtitle('True Poincaré Map','Interpreter','latex')
+    grid on; box on; shading interp
+    xlim([-6 6])
+    ylim([-6 6])
+    colormap(colormap_type)
+    
+    % Update the initial condition with the current value of phi
+    IC(3) = phi;
+    
+    % ODE45 Solver for updated phi
+    [t, Y] = ode45(Duffing_Eq, time_span, IC, opts);
+    
+    % Detect intersections with phi plane
+    % Intersection points are stored for plotting the map
+    for i = 2:length(t)
+        phi_prev = Y(i-1, 3);
+        phi_curr = Y(i, 3);
+        
+        % Check if the phi plane is crossed between phi_prev and phi_curr
+        if floor(phi_prev/(2*pi)) ~= floor(phi_curr/(2*pi))
+            % Find the exact crossing point using linear interpolation
+            ratio = (2*pi*floor(phi_curr/(2*pi)) - phi_prev)/(phi_curr - phi_prev);
+            x_intersect = Y(i-1, 1) + ratio*(Y(i, 1) - Y(i-1, 1));
+            y_intersect = Y(i-1, 2) + ratio*(Y(i, 2) - Y(i-1, 2));
+            
+            % Store the intersection point
+            poincare_x = [poincare_x; x_intersect];
+            poincare_y = [poincare_y; y_intersect];
+        end
+    end
+
+    % ZData populated by current value of phi
+    poincare_phi = abs(phi*ones(size(poincare_x)));
+
+    % Normalize poincare_x for color mapping
+    norm_poincare_x = (poincare_x - min(poincare_x)) / (max(poincare_x) - min(poincare_x));
+    colors = cool(length(norm_poincare_x));
+    
+    % Update the 3D poincare map with the new points
+    subplot(1,2,1)
+    scatter3(poincare_x, poincare_y, poincare_phi, point_size, colors, 'filled');
+    plot3(Y_global(:,1), Y_global(:,2), Y_global(:,3), 'Color', [0.5 0.5 0.5 0.02],'LineWidth',0.5)
+
+    % Plot the plane with current value of phi as the height
+    [X_plane, Y_plane] = meshgrid(linspace(-6, 6, 100)); % Define grid for plane
+    Z_plane = abs(phi*ones(size(X_plane))); % Z values for the plane
+    surf(X_plane, Y_plane, Z_plane, 'FaceAlpha', 0.3, 'EdgeAlpha', 0.3, 'FaceColor', 'k', 'EdgeColor', 'none');
+    scatter3(poincare_x, poincare_y, poincare_phi, point_size, colors, 'filled');
+
+    % Update the true poincare map with the new points
+    subplot(1,2,2)
+    scatter(poincare_x, poincare_y, point_size, colors, 'filled');
+    plot3(Y_global(:,1), Y_global(:,2), Y_global(:,3), 'Color', [0.5 0.5 0.5 0.02],'LineWidth',0.5)
+
+    % Increment the phase variable
+    % NOTE: This is HARDCODED since the map was evolving backwards...
+    % change "-" to "+" and delte "abs" in poincare_phi and Z_plane to see
+    phi = phi - phi_final/angular_res; % Decrementing phi to reverse rotation
+
+    drawnow
+
+    frame = getframe(gcf);
+    writeVideo(myWriter,frame);
+end
+close(myWriter)
+
+%% Plotting Reference Functions
+function myfigpref
+% MYFIGPREF just makes figures pretty. Written by TGJChandler
+% Last edited: 01/01/2018 by TGJChandler
+% Comment by Tyler Jones: Thomas Chandler was my professor for math
+% 415 (Applied Dynamical Systems, Chaos, and Modeling) @UW-Madison
+
+set(0, 'DefaultAxesFontSize', 20)
+set(0, 'DefaultAxesLineWidth', 2);
+set(0, 'DefaultLineLineWidth', 2);
+set(0, 'DefaultPatchLineWidth', .7);
+set(0, 'DefaultLineMarkerSize', 6);
+
+grid on;
+box on;
+
+h = gca;
+h.TickLabelInterpreter='latex';
+h.MinorGridAlpha=0.05;
+h.GridAlpha=0.05;
+h.FontSize=25;
+h.LineWidth=2;
+
+h = gcf;
+h.Color = [1,1,1];
+end
+
+function fig_xytit(xlab, ylab, tit)
+% FIG_XYTIT sets the current figure's xlabel, ylabel, and title in latex format.
+% Last edited: 15/06/2021 by TGJChandler
+
+if nargin<3
+    tit = '';
+end
+
+xlabel(xlab, 'interpreter', 'latex')
+ylabel(ylab, 'interpreter', 'latex')
+title(tit, 'interpreter', 'latex')
+end

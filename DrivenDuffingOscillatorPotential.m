@@ -13,7 +13,6 @@ omega = 2;
 delta = 0.1;
 
 %% Simulation and Visualization Loop
-
 t_final = 10;
 x_dot = @(x,v) v;
 v_dot = @(x,v,t) gamma*cos(omega*t) - delta*v - alpha*x - beta*x.^3;
@@ -21,8 +20,8 @@ v_dot = @(x,v,t) gamma*cos(omega*t) - delta*v - alpha*x - beta*x.^3;
 % ---
 % Generate mesh
 % ---
-x = linspace(-10,10,200);
-v = linspace(-10,10,200);
+x = linspace(-5,5,200);
+v = linspace(-5,5,200);
 t = linspace(0,t_final,100);
 [X,V] = meshgrid(x,v);
 UU = x_dot(X,V);
@@ -30,51 +29,53 @@ UU = x_dot(X,V);
 % Begin time stepping
 figure('units','normalized','Position',[0.1 0.1 .8 .8])
 
-% myWriter = VideoWriter('DuffingEquationPotential.mp4', 'MPEG-4');
-% myWriter.FrameRate = 30;
-% open(myWriter);
+myWriter = VideoWriter('DuffingEquationEnergy.mp4', 'MPEG-4');
+myWriter.FrameRate = 30;
+open(myWriter);
 
 for i = 1:length(t)
     clf;
 
-    energy = gamma*cos(omega*i*t_final/length(t)) - delta*V - alpha*X - beta*X.^3;
+    %energy = 1/2*abs(V).^2 + gamma*cos(omega*i*t_final/length(t)) - delta*V - alpha*X - beta*X.^3;
+    energy = 1/2*abs(V).^2 + 1/2*alpha*X.^2 + 1/4*beta*X.^4;
     VV = v_dot(X,V,i*t_final/length(t));
 
-    % Plot the potential surface
+    % Plot the energy surface
     subplot(1,2,1)
     hold on
     myfigpref
-    fig_xytit('$x$','$v$','Potential Surface')
+    fig_xytit('$x$','$v$','Energy Surface')
     meshc(X,V,energy)
-    view([131 60 45])
+    view([130 60 45]) % Adjust view setting as desired
     colorbar
     colormap jet
-    contour(X,V,energy,[0 0],'LineColor','white','LineWidth',5);
+    contour(X,V,energy,[0 0],'LineColor','white','LineWidth',5)
     axis auto
     hold off
 
+    % Plot the energy contour
     subplot(1,2,2)
     hold on
     myfigpref
-    fig_xytit('$x$','$v$','Potential Contour')
+    fig_xytit('$x$','$v$','Energy Contour')
     contourf(X,V,energy)
     strmslice1 = streamslice(X,V,UU,VV,5);
-    set(strmslice1, 'Color', 'white','linewidth',0.5);
+    set(strmslice1, 'Color', 'white','linewidth',0.5)
     colorbar
     colormap jet
     shading interp
-    contour(X,V,energy,[0 0],'LineColor','white','LineWidth',5);
+    contour(X,V,energy,[0 0],'LineColor','white','LineWidth',5)
     axis auto
     hold off
 
-    pause(0.01)
+    drawnow
 
-%     frame = getframe(gcf);
-%     writeVideo(myWriter,frame);
+    frame = getframe(gcf);
+    writeVideo(myWriter,frame);
 
 end
 
-% close(myWriter)
+close(myWriter)
 
 %% Plotting Reference Functions
 function myfigpref

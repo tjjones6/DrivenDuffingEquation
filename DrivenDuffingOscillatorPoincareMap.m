@@ -3,23 +3,20 @@
 % Contact: tjjones6@wisc.edu
 % Date:    04.09.2024
 % 
-% <<PoincareMapOmega2Pi.png>>
+% This MATLAB script models the behavior of a driven Duffing oscillator, a 
+% nonlinear dynamical system common in engineering and physics. By numerically 
+% solving the Driven Duffing Equation using MATLAB's ode45 solver, it 
+% generates a Poincaré section plot, illustrating the oscillator's phase space 
+% dynamics. 
 % 
+% See the following for more info: 
+% <https://en.wikipedia.org/wiki/Duffing_equation> 
+% Steven H. Strogatz: Nonlinear Dynamics and Chaos
+%
+% <<PoincareMapOmega2Pi.png>>
 
 
-%{
-This MATLAB script models the behavior of a driven Duffing oscillator, a 
-nonlinear dynamical system common in engineering and physics. By numerically 
-solving the Driven Duffing Equation using MATLAB's ode45 solver, it 
-generates a Poincaré section plot, illustrating the oscillator's phase space 
-dynamics. 
-
-See the following for more info: 
-<https://en.wikipedia.org/wiki/Duffing_equation> 
-Steven H. Strogatz: Nonlinear Dynamics and Chaos
-%}
-
-clear all; close all; clc;
+clear all; close all; clc; help DrivenDuffingOscillatorPoincareMap
 
 %% Parameter Library and User Input
 %{ 
@@ -33,22 +30,23 @@ omega: Angular frequency of external driving force
 delta: Coefficient of velocity damping/stiffness
 %}
 
-% alpha = -1;
-% beta = 1;
-% gamma = 0.6;
-% omega = 1.5;
-% delta = 0.3;
-
 alpha = -1;
-beta = 0.25;
-gamma = 2.5;
-omega = 2;
-delta = 0.1;
+beta = 1;
+gamma = 0.6;
+omega = 1.5;
+delta = 0.3;
+
+% alpha = -1;
+% beta = 0.25;
+% gamma = 2.5;
+% omega = 2;
+% delta = 0.1;
 
 % Period Definition
-% NOTE: For t_period, "1000*T" controls the density of Poincaré Map
+% NOTE: For t_period, "density*T" controls the density of Poincaré Map
+density = 10000;
 T = 2*pi/omega; % Period of solution
-t_period = (0:T:10000*T)'; % Periodic time vector 
+t_period = (0:T:density*T)'; % Periodic time vector 
 
 % Initial Condition (x,x_dot,phi)
 y0 = [1; 0; 0]; % Initial data/condition: (x=1, x_dot=0, phi=0)
@@ -57,6 +55,7 @@ y0 = [1; 0; 0]; % Initial data/condition: (x=1, x_dot=0, phi=0)
 b = 6;
 axis_controls = [-b b];
 bound = b;
+num_points = 30;
 
 %% Vector Field Generation
 %{
@@ -72,9 +71,10 @@ v_dot = @(x,v,t) gamma*cos(omega*t) - delta*v - alpha*x - beta*x.^3;
 
 % Generate grid and mesh for velocity vectors.
 % NOTE: VV is defined and updated in the loop since it is time-dependent
-xx = linspace(-bound,bound,30);
-yy = linspace(-bound,bound,30);
-[XX,YY] = meshgrid(xx,yy);
+xx = linspace(-bound,bound,num_points);
+yy = linspace(-bound,bound,num_points);
+zz = linspace(-bound,bound,num_points);
+[XX,YY,ZZ] = meshgrid(xx,yy,zz);
 UU = x_dot(XX,YY);
 
 %% Simulation and Visualization Loop
@@ -92,6 +92,7 @@ System Definition:
 %}
 
 figure('units','normalized','Position',[0.1 0.1 .8 .8])
+myfigpref
 
 % Solve Duffing Equation via ODE45
 Duff_Eq = @(t, Y) [Y(2); gamma*cos(Y(3)) - delta*Y(2) - alpha*Y(1) - beta*Y(1).^3; omega];
@@ -102,14 +103,18 @@ Duff_Eq = @(t, Y) [Y(2); gamma*cos(Y(3)) - delta*Y(2) - alpha*Y(1) - beta*Y(1).^
 
 % Iterate over increasing values of phi
 angular_res = 100; % Resolution for sweeping phi
-phi_final = 6*pi;  % Final angle
+phi_final = 2*pi;  % Final angle
+
 for phi = linspace(0, phi_final, angular_res)
     clf
 
     % Update the initial condition with the current phi
     y0(3) = phi;
     VV = v_dot(XX,YY,phi*T);
-    
+
+    % Energy
+    energy = 1/2*abs(YY(:,:,1)).^2 + gamma*cos(omega*phi) - delta*YY(:,:,1) - alpha*XX(:,:,1) - beta*XX(:,:,1).^3;
+
     % ODE45 Solver
     [t, Y] = ode45(Duff_Eq, t_period, y0);
 
@@ -122,17 +127,20 @@ for phi = linspace(0, phi_final, angular_res)
     colors(:, 3) = -normalized_x; 
     
     % Plot the Poincaré section (x vs. x_dot)
-    quiver(XX,YY,UU,VV,'Color',[0.7,0.7,0.7],'LineWidth',1.5);
+    contourf(xx, yy, energy)
     hold on
+    quiver(XX,YY,UU,VV,'Color',[0.7,0.7,0.7],'LineWidth',1.5);
     %plot(Y(2:end,1), Y(2:end,2), 'MarkerSize', 5)
     scatter(Y(2:end,1), Y(2:end,2), 5, colors, 'filled')
+    colormap jet; shading interp;
     grid on
     fig_xytit('$x$','$\dot{x}$')
     title(['Poincare Section: $\ddot{x} + \delta\dot{x} + \alpha x + \beta x^3 = \gamma \cos(\omega t)$, $\phi = \omega t = $ ', num2str(phi)],'Interpreter','latex'); % Add iteration step of phi to title
     xlim(axis_controls)
     ylim(axis_controls)
     hold off
-    pause(0.01)
+
+    drawnow
 
 %     frame = getframe(gcf);
 %     writeVideo(myWriter,frame);
