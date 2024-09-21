@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driven Duffing Oscillator Solver</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css"
+        integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js"
+        integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz"
+        crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js"
+        integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h3 {
+            margin: 0;
+        }
+
+        .input-container {
+            width: 80%;
+            max-width: 600px;
+            margin: 20px;
+        }
+
+        .plot-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        .slider-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .slider-container span {
+            display: block;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        button {
+            background-color: rgb(65, 115, 253);
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        /* Optional: Style the button when hovered */
+        button:hover {
+            background-color: blue;
+        }
+
+        /* Popup styles */
+        #loadingPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
+            border-radius: 10px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Driven Duffing Oscillator Solver</h1>
+    <h3>Tyler Jones</h3>
+    <h3>University of Wisconsin-Madison</h3>
+
+    <div class="input-container">
+        <form id="duffingForm">
+            <div style="font-size: 18px; text-align: center; margin-bottom: 20px;">
+                $$
+                \ddot{x} + \delta \dot{x} + \alpha x + \beta x^3 = \gamma \cos(\omega t)
+                $$
+            </div>
+            <h3 style="margin-bottom: 10px; text-decoration: underline;"> Parameters </h3>
+            <div class="form-group">
+                <label for="alpha"> Coefficient of Linear Damping: \( \alpha= \)</label>
+                <input type="number" id="alpha" step="0.01" value="-1">
+            </div>
+            <div class="form-group">
+                <label for="beta">Coefficient of Cubic Damping: \( \beta= \)</label>
+                <input type="number" id="beta" step="0.01" value="0.25">
+            </div>
+            <div class="form-group">
+                <label for="gamma">Amplitude of external driving force: \( \gamma= \)</label>
+                <input type="number" id="gamma" step="0.01" value="2.5">
+            </div>
+            <div class="form-group">
+                <label for="omega">Angular frequency of external driving force: \( \omega= \)</label>
+                <input type="number" id="omega" step="0.01" value="2">
+            </div>
+            <div class="form-group">
+                <label for="delta">Coefficient of velocity damping: \( \delta= \)</label>
+                <input type="number" id="delta" step="0.01" value="0.1">
+            </div>
+            <h3 style="margin-bottom: 10px; text-decoration: underline;"> Initial Conditions </h3>
+            <div class="form-group">
+                <label for="x0">Initial Displacement: \( x_0= \)</label>
+                <input type="number" id="x0" step="0.01" value="0">
+            </div>
+            <div class="form-group">
+                <label for="v0">Initial Velocity: \( \dot{x_0}=v_0= \)</label>
+                <input type="number" id="v0" step="0.01" value="0">
+            </div>
+            <h3 style="margin-bottom: 10px; text-decoration: underline;"> Solver Input </h3>
+            <div class="form-group">
+                <label for="timeSpan">Time Span (s):</label>
+                <input type="number" id="timeSpan" step="0.1" value="50">
+            </div>
+            <div class="form-group">
+                <label for="timeStep">Time Step (s):</label>
+                <input type="number" id="timeStep" step="0.01" value="0.01">
+            </div>
+            <button type="button" onclick="solveDuffing()">Run Solver</button>
+        </form>
+    </div>
+
+    <!-- Plotting -->
+    <div class="plot-container">
+        <div id="xPlot" style="width: 100%; height: 400px;"></div>
+        <div id="vPlot" style="width: 100%; height: 400px;"></div>
+        <div id="phasePlot" style="width: 100%; height: 400px;"></div>
+        <div id="poincarePlot" style="width: 100%; height: 400px;"></div>
+        <div class="slider-container">
+            <label for="phiSlider">Poincaré Section (φ):</label>
+            <input type="range" id="phiSlider" min="0" max="6.2832" step="0.01" value="0">
+            <span id="phiValueDisplay">0</span>
+        </div>
+    </div>
+
+    <!-- Loading Popup -->
+    <div id="loadingPopup"> Loading... Please wait. </div>
+
+    <!-- JavaScript -->
+    <script>
+        document.getElementById('phiSlider').addEventListener('input', function () {
+            const phiValue = parseFloat(this.value);
+            document.getElementById('phiValueDisplay').innerText = phiValue.toFixed(2);
+            solveDuffing();
+        });
+
+        function showLoadingPopup() {
+            document.getElementById('loadingPopup').style.display = 'block';
+        }
+
+        function hideLoadingPopup() {
+            document.getElementById('loadingPopup').style.display = 'none';
+        }
+
+        // solveDuffing uses Rk4 (no adaptive step sizing) to solve the system with user input parameters
+        function solveDuffing() {
+            showLoadingPopup();
+
+            // Pull constants from HTML form
+            const alpha = parseFloat(document.getElementById('alpha').value);
+            const beta = parseFloat(document.getElementById('beta').value);
+            const gamma = parseFloat(document.getElementById('gamma').value);
+            const omega = parseFloat(document.getElementById('omega').value);
+            const delta = parseFloat(document.getElementById('delta').value);
+            const timeSpan = parseFloat(document.getElementById('timeSpan').value);
+            const timeStep = parseFloat(document.getElementById('timeStep').value);
+            const x0 = parseFloat(document.getElementById('x0').value);
+            const v0 = parseFloat(document.getElementById('v0').value);
+            const phiValue = parseFloat(document.getElementById('phiSlider').value);
+
+            // Define variables
+            let t = 0;
+            let x = x0;
+            let v = v0;
+            let phi = 0;
+
+            // Preallocate empty arrays to be populated in main time stepping loop
+            const timeArray = [];
+            const xArray = [];
+            const vArray = [];
+            const phiArray = [];
+            const poincareX = [];
+            const poincareV = [];
+            const poincarePhi = [];
+
+            const T = 2 * Math.PI / omega; // Period of the driving force
+
+            // Intermediate value theorem for Poincare plot
+            function checkIVT(previousValue, currentValue) {
+                return previousValue * currentValue < 0;
+            }
+
+            function rk4_step(x, v, phi, t, dt) {
+                function dxdt(v) {
+                    return v;
+                }
+
+                function dvdt(x, v, phi) {
+                    return gamma * Math.cos(phi) - delta * v - alpha * x - beta * Math.pow(x, 3);
+                }
+
+                function dphidt(omega) {
+                    return omega;
+                }
+
+                const k1x = dt * dxdt(v);
+                const k1v = dt * dvdt(x, v, phi);
+                const k1phi = dt * dphidt(omega);
+
+                const k2x = dt * dxdt(v + 0.5 * k1v);
+                const k2v = dt * dvdt(x + 0.5 * k1x, v + 0.5 * k1v, phi + 0.5 * k1phi);
+                const k2phi = dt * dphidt(omega);
+
+                const k3x = dt * dxdt(v + 0.5 * k2v);
+                const k3v = dt * dvdt(x + 0.5 * k2x, v + 0.5 * k2v, phi + 0.5 * k2phi);
+                const k3phi = dt * dphidt(omega);
+
+                const k4x = dt * dxdt(v + k3v);
+                const k4v = dt * dvdt(x + k3x, v + k3v, phi + k3phi);
+                const k4phi = dt * dphidt(omega);
+
+                x += (k1x + 2 * k2x + 2 * k3x + k4x) / 6;
+                v += (k1v + 2 * k2v + 2 * k3v + k4v) / 6;
+                phi += (k1phi + 2 * k2phi + 2 * k3phi + k4phi) / 6;
+
+                phi = phi % (2 * Math.PI);
+                if (phi < 0) phi += 2 * Math.PI;
+
+                return { x, v, phi };
+            }
+
+            // Update step
+            let previousX = x0;
+            let previousV = v0;
+
+            // Main time stepping loop
+            while (t <= timeSpan) {
+
+                // Populate variable arrays
+                timeArray.push(t);
+                xArray.push(x);
+                vArray.push(v);
+                phiArray.push(phi);
+
+                if (checkIVT(previousX, x)) {
+                    console.log(`Zero-crossing detected in x at t=${t}`);
+                }
+                if (checkIVT(previousV, v)) {
+                    console.log(`Zero-crossing detected in v at t=${t}`);
+                }
+
+                // Add points to Poincaré map if t is close to a multiple of T
+                if (Math.abs((t % T) - T) <= timeStep / 2 || Math.abs(t % T) <= timeStep / 2) {
+                    poincareX.push(x);
+                    poincareV.push(v);
+                    poincarePhi.push(phi);
+                }
+
+                previousX = x;
+                previousV = v;
+
+                const { x: newX, v: newV, phi: newPhi } = rk4_step(x, v, phi, t, timeStep);
+                x = newX;
+                v = newV;
+                phi = newPhi;
+                t += timeStep;
+            }
+
+            // Function to trim arrays to a maximum length
+            function trimArray(array, maxLength) {
+                if (array.length > maxLength) {
+                    const step = Math.ceil(array.length / maxLength);
+                    return array.filter((_, index) => index % step === 0);
+                }
+                return array;
+            }
+
+            // Trim the phase plot data
+            const maxPhasePoints = 100000;
+            const maxPoincarePoints = 10000;
+            const trimmedXArray = trimArray(xArray, maxPhasePoints);
+            const trimmedVArray = trimArray(vArray, maxPhasePoints);
+            const trimmedPoincareX = trimArray(poincareX, maxPoincarePoints);
+            const trimmedPoincareV = trimArray(poincareV, maxPoincarePoints);
+            const trimmedPoincarePhi = trimArray(poincarePhi, maxPoincarePoints);
+
+            const trace1 = {
+                x: timeArray,
+                y: xArray,
+                mode: 'lines',
+                name: 'x(t)',
+            };
+
+            const trace2 = {
+                x: timeArray,
+                y: vArray,
+                mode: 'lines',
+                name: 'v(t)',
+            };
+
+            const trace3 = {
+                x: trimmedXArray,
+                y: trimmedVArray,
+                mode: 'markers',
+                name: 'Phase Space (x vs v)',
+                marker: {
+                    size: 4, // Set the marker size here
+                    opacity: 0.1 // Optional: Set marker opacity
+                }
+            };
+
+            const trace4 = {
+                x: trimmedPoincareX,
+                y: trimmedPoincareV,
+                mode: 'markers',
+                name: `Poincaré Section φ = ${phiValue.toFixed(2)}`,
+                marker: {
+                    size: 4, // Set the marker size here
+                }
+            };
+
+            const layout4 = {
+                title: `Poincaré Section (φ = ${phiValue.toFixed(2)})`,
+                xaxis: {
+                    title: 'Displacement (x)',
+                    range: [Math.min(...poincareX) - 1, Math.max(...poincareX) + 1] // Adjust range as needed
+                },
+                yaxis: {
+                    title: 'Velocity (v)',
+                    range: [Math.min(...poincareV) - 1, Math.max(...poincareV) + 1] // Adjust range as needed
+                },
+            };
+
+            Plotly.newPlot('xPlot', [trace1], { title: 'Displacement vs Time' });
+            Plotly.newPlot('vPlot', [trace2], { title: 'Velocity vs Time' });
+            Plotly.newPlot('phasePlot', [trace3], { title: 'Phase Space (x vs v)' });
+            Plotly.newPlot('poincarePlot', [trace4], layout4);
+
+            // Hide the loading popup after computation is done
+            hideLoadingPopup();
+        }
+        solveDuffing();
+    </script>
+</body>
+
+</html>
