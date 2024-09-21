@@ -8,26 +8,71 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
 </head>
+<style>
+  header {
+      background-color: black;
+      color: white;
+      text-align: center;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 200%;
+      width: 100%;
+      padding: 2%;
+      border-radius: 10px;
+    }
+
+    p {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 18px;
+      line-height: 1.5;
+      color: #333;
+    }
+
+    body {
+      background-color: #f5f5f5;
+    }
+
+    h2 {
+      font-family: 'Times New Roman', Times, serif;
+    }
+
+    img {
+      border-radius: 25px;
+    }
+
+    video {
+      border-radius: 25px;
+    }
+</style>
 
 <body style="margin-left: 10%;margin-right: 10%;">
   <header style="background-color: black;color: white;text-align: center;font-size: 150%;
   border-top-left-radius: 15px;border-top-right-radius: 15px;">Driven Duffing Equation</header>
   <!--<p>Math can be inline like \(2^{2x}=4\), or displayed like:</p>
   \[2^{3x}=8\]-->
-  <p style="font-size: small; text-align: center;margin-bottom: 0;">
+  <p style="font-size: large; text-align: center;margin-bottom: 0;">
     Tyler Jones
   </p>
-  <p style="font-size: small; text-align: center;margin: 0;">
+  <p style="font-size: large; text-align: center;margin: 0;">
     University of Wisconsin-Madison
   </p>
-  <p style="margin: 0%; font-style: italic;">
+
+  <h1 style="text-align: center; color: red;">
+    IN PROGRESS
+  </h1>
+  <h2 style="margin: 0%; font-style: italic; text-decoration: underline;">
     MATLAB Files
-  </p>
+  </h2>
 <p style="margin: 0;">
   <a href="DuffingEquationPhaseSpace.html">PhaseSpace.m</a>
 </p>
 <p style="margin: 0;">
   <a href="https://tjjones6.github.io/DrivenDuffingPoincareMap/">Poincare.m</a>
+</p>
+<h2 style="margin: 0%; font-style: italic; text-decoration: underline;">
+  Numerical Solver/Plotter
+</h2>
+<p style="margin: 0;">
+  <a href="DrivenDuffingNumericalSolver.html"> Visit Page</a>
 </p>
 
 <!-- 
@@ -35,7 +80,7 @@
 -->
 
 <div style="display: flex; justify-content: center; align-items: center;">
-  <video style="width: 75%;" src="DuffingEquationAnimationRev2.mp4" autoplay muted></video>
+  <video style="width: 75%; border-radius: 25px;" src="DuffingEquationAnimationRev2.mp4" autoplay controls muted></video>
 </div>
 
   <p style="text-indent:30px; font-size: large;">
@@ -101,10 +146,5 @@ behavior and its sensitivity to initial conditions.
   properties of the Poincaré section and its relevance in characterizing the driven Duffing equation's behavior.
 </p>
 </body>
-
-
-<footer style="background-color: black;color: white;text-align: center;font-size: 150%; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
-  Tyler Jones | University of Wisconsin-Madison | AMEP
-</footer>
 
 </html>
